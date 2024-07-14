@@ -24,3 +24,7 @@ def addCustomer(request):
 @api_view(['GET'])
 def showProduct(request):
     return Controllers.getProductDetail(request)
+
+@api_view(['POST'])
+def addSales(request):
+    return Controllers.insertdatasale(request)

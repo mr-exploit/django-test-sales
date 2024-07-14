@@ -10,4 +10,7 @@ urlpatterns = [
     
     #route product 
     path('product', views.showProduct, name = "get_product"),
+    
+    #route sales
+    path('sales/create', views.addSales, name = "add_sales"),
 ]

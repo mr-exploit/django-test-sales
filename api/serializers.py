@@ -23,7 +23,7 @@ class ProductsSerializer(serializers.ModelSerializer):
     
 class SalesSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Sales, Sale_Items
+        model = Sales
         fields = '__all__'
 
     def validate_description(self, value):
