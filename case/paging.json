@@ -1,0 +1,43 @@
+{
+    "params": [
+      {
+        "keyword": "",
+        "data_periode_start": "dd/mm/yyyy",
+        "data_periode_end": "dd/mm/yyy",
+        "total_data_show": 10
+      }
+    ],
+    "data": [
+      {
+        "keyword": "",
+        "total_data": 200,
+        "total_data_show": 10,
+        "total_page": 20,
+        "Page": 1,
+        "status": 200,
+        "rows": [
+          {
+            "sale_code": "1234567890",
+            "sale_date": "dd/mm/yy",
+            "customer": "customer 1",
+            "total_item": "5",
+            "total_price": "1000000"
+          },
+          {
+            "sale_code": "1234567891",
+            "sale_date": "dd/mm/yy",
+            "customer": "customer 2",
+            "total_item": "10",
+            "total_price": "1500000"
+          },
+          {
+            "sale_code": "1234567892",
+            "sale_date": "dd/mm/yy",
+            "customer": "customer 3",
+            "total_item": "15",
+            "total_price": "1300000"
+          }
+        ]
+      }
+    ]
+  }

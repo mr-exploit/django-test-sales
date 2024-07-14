@@ -1,0 +1,24 @@
+{
+  "Code": 200,
+  "message": [
+    {
+      "total_items": 15,
+      "total_sucess": 10,
+      "total_falied": 5
+    }
+  ],
+  "items": [
+    {
+      "id": 1,
+      "price": 13000,
+      "qty": 1,
+      "status": "Success"
+    },
+    {
+      "id": 1,
+      "price": 13000,
+      "qty": 1,
+      "status": "Failed - not enough Stock"
+    }
+  ]
+}

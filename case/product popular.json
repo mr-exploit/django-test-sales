@@ -1,0 +1,47 @@
+{
+    "params": [
+      {
+        "data_periode_start": "dd/mm/yyyy",
+        "data_periode_end": "dd/mm/yyy",
+        "total_data_show": 5
+      }
+    ],
+    "data": [
+      {
+        "Product_id": 1,
+        "Product_code": "P1234567890",
+        "product_name": "Product name 1",
+        "total_items": 9,
+        "total_price": 1000000
+      },
+      {
+       "Product_id": 2,
+        "Product_code": "P1234567891",
+        "product_name": "Product name 2",
+        "total_items": 8,
+        "total_price": 900000
+      },
+      {
+        "Product_id": 3,
+        "Product_code": "P1234567892",
+        "product_name": "Product name 3",
+        "total_items": 10,
+        "total_price": 800000
+      },
+      {
+        "Product_id": 4,
+        "Product_code": "P1234567893",
+        "product_name": "Product name 3",
+        "total_items": 10,
+        "total_price": 700000
+      },
+      {
+        "Product_id": 5,
+        "Product_code": "P1234567894",
+        "product_name": "Product name 4",
+        "total_items": 10,
+        "total_price": 600000
+      }
+
+    ]
+  }

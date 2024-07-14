@@ -1,0 +1,20 @@
+{
+  "ids": [
+    "1",
+    "2",
+    "3"
+  ],
+  "keyword": "",
+  "total": 10,
+  "status": 200,
+  "rows": [
+    {
+      "id": 1,
+      "name": "Customer 1"
+    },
+    {
+      "id": 2,
+      "name": "Customer 2"
+    }
+  ]
+}

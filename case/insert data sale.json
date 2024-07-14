@@ -1,0 +1,37 @@
+{
+  "customer_id": "1",
+  "transaction_code": "123456789",
+  "transaction_date": "yyyy-mm-dd hh:ii:ss",
+  "items": [
+    {
+      "id": 1,
+      "price": 13000,
+      "qty": 1
+    },
+    {
+      "id": 2,
+      "price": 12000,
+      "qty": 1
+    },
+    {
+      "id": 3,
+      "price": 17000,
+      "qty": 1
+    },
+    {
+      "id": 4,
+      "price": 18000,
+      "qty": 1
+    },
+    {
+      "id": 5,
+      "price": 22000,
+      "qty": 1
+    },
+    {
+      "id": 6,
+      "price": 30000,
+      "qty": 1
+    }
+  ]
+}
