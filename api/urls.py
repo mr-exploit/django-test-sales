@@ -13,4 +13,5 @@ urlpatterns = [
     
     #route sales
     path('sales/create', views.addSales, name = "add_sales"),
+    path('sales/paging', views.pagingView, name = "get_sales"),
 ]

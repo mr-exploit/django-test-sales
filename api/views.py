@@ -28,3 +28,7 @@ def showProduct(request):
 @api_view(['POST'])
 def addSales(request):
     return Controllers.insertdatasale(request)
+
+@api_view(['GET'])
+def pagingView(request):
+    return Controllers.pagingControllers(request)

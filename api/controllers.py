@@ -4,7 +4,9 @@ from rest_framework.pagination import PageNumberPagination, LimitOffsetPaginatio
 from rest_framework import status
 from rest_framework.decorators import api_view
 from .serializers import CustomerSerializer, ProductsSerializer, SalesSerializer, SalesItemSerializer
-from .models import Customer, Products
+from .models import Customer, Products, Sales, Sale_Items
+from django.db.models import Q
+from datetime import datetime
 
 class Controllers:
     
@@ -87,20 +89,26 @@ class Controllers:
         try:
             sale_date = request.data.get('sale_date', None)
             sale_customer_id = request.data.get('sale_customer', None)
-            sale_items = request.data.get('sale_items', [])
+            sale_items = request.data.get('sale_items', None)
 
             # Validate sale_customer_id
             if sale_customer_id is None:
                 return Response({'message': 'Sale customer ID is required'}, status=status.HTTP_400_BAD_REQUEST)
 
+            try:
+                sale_customer = Customer.objects.get(id=sale_customer_id)
+            except Customer.DoesNotExist:
+                return Response({'message': 'Invalid sale customer ID'}, status=status.HTTP_400_BAD_REQUEST)
+
             # Validate sale_items
             if not sale_items:
                 return Response({'message': 'Sale items list is required'}, status=status.HTTP_400_BAD_REQUEST)
 
+            print("check sale_customer", sale_customer)
             # Create Sales instance
             sales_data = {
                 'sale_date': sale_date,
-                'sale_customer_id': sale_customer_id,
+                'sale_customer': sale_customer_id,
                 'sale_items_total': len(sale_items)  # Assuming sale_items_total is the count of items
             }
             sales_serializer = SalesSerializer(data=sales_data)
@@ -123,19 +131,18 @@ class Controllers:
                             'message': 'Quantity exceeds available stock'
                         })
                     else:
-                        # Create Sale_Items instance
+              
                         sale_item_data = {
                             'sale_id': sales_instance.id,
                             'product_id': product_id,
                             'product_price': product.product_price,
                             'item_qty': item_qty,
-                            'is_verify': 0  # Assuming this field needs to be set
+                            'is_verify': 0  
                         }
                         sale_item_serializer = SalesItemSerializer(data=sale_item_data)
                         if sale_item_serializer.is_valid():
                             sale_item_serializer.save()
 
-                            # Update product stock
                             product.product_stock -= item_qty
                             product.save()
 
@@ -156,4 +163,58 @@ class Controllers:
             return Response(sales_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
+            print("check error", e)
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    @staticmethod
+    def pagingControllers(request, format=None):
+        try:
+            keyword = request.GET.get('keyword', '')
+            data_periode_start = request.GET.get('data_periode_start', '')
+            data_periode_end = request.GET.get('data_periode_end', '')
+            total_data_show = int(request.GET.get('total_data_show', 10))
+            page = int(request.GET.get('page', 1))
+
+            filters = Q()
+            
+            if keyword:
+                filters &= Q(id__icontains=keyword) | Q(sale_customer__customer_name__icontains=keyword)
+            
+            if data_periode_start and data_periode_end:
+                try:
+                    data_periode_start_date = datetime.strptime(data_periode_start, '%d/%m/%Y')
+                    data_periode_end_date = datetime.strptime(data_periode_end, '%d/%m/%Y')
+                    filters &= Q(sale_date__range=(data_periode_start_date, data_periode_end_date))
+                except ValueError:
+                    return Response({'message': 'Invalid date format'}, status=status.HTTP_400_BAD_REQUEST)
+
+            sales = Sales.objects.filter(filters)
+            total_data = sales.count()
+            total_page = (total_data + total_data_show - 1) // total_data_show
+            sales = sales[(page - 1) * total_data_show : page * total_data_show]
+
+            sales_serializer = SalesSerializer(sales, many=True)
+            response_data = {
+                "params": [
+                    {
+                        "keyword": keyword,
+                        "data_periode_start": data_periode_start,
+                        "data_periode_end": data_periode_end,
+                        "total_data_show": total_data_show
+                    }
+                ],
+                "data": [
+                    {
+                        "keyword": keyword,
+                        "total_data": total_data,
+                        "total_data_show": total_data_show,
+                        "total_page": total_page,
+                        "Page": page,
+                        "status": 200,
+                        "rows": sales_serializer.data
+                    }
+                ]
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

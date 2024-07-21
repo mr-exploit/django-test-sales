@@ -27,7 +27,8 @@ class Sales(models.Model):
         return f'Sales {self.id}'
 
 class Sale_Items(models.Model):
-    sale_id = models.ForeignKey(Sales, on_delete=models.CASCADE, null=True, blank=True)
+    # Dalam Django, untuk mengakses item yang berhubungan dengan objek tertentu (misalnya Sales ke Sale_Items), biasanya menggunakan related_name pada ForeignKey
+    sale_id = models.ForeignKey(Sales, on_delete=models.CASCADE, null=True, blank=True, related_name='sale_items')
     product_id = models.ForeignKey(Products, on_delete=models.CASCADE, null=True, blank=True)
     product_price = models.FloatField(null = False, blank = False)
     item_qty = models.IntegerField(default=0)
