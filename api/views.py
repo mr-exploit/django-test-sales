@@ -32,3 +32,11 @@ def addSales(request):
 @api_view(['GET'])
 def pagingView(request):
     return Controllers.pagingControllers(request)
+
+@api_view(['GET'])
+def compareView(request):
+    return Controllers.comparedataControllers(request)
+
+@api_view(['GET'])
+def popularProductView(request):
+    return Controllers.productPopuler(request)

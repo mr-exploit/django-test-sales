@@ -1,0 +1,227 @@
+{
+	"info": {
+		"_postman_id": "48be37af-168e-4ef6-ac25-02890f031376",
+		"name": "django-sales",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "23620068"
+	},
+	"item": [
+		{
+			"name": "customer",
+			"item": [
+				{
+					"name": "tes",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{dev}}/tes"
+					},
+					"response": []
+				},
+				{
+					"name": "getcustomer",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{dev}}/customer"
+					},
+					"response": []
+				},
+				{
+					"name": "Add customer",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"customer\" : \"Customer G\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{dev}}/customer/create"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "product",
+			"item": [
+				{
+					"name": "get Product",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{dev}}/product"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "sale",
+			"item": [
+				{
+					"name": "createsale",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{dev}}/product"
+					},
+					"response": []
+				},
+				{
+					"name": "get Product Copy",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"sale_date\": \"2024-07-15\",\r\n    \"sale_customer\": 1,\r\n    \"sale_items\": [\r\n        {\r\n            \"product_id\": 1,\r\n            \"item_qty\": 2\r\n        },\r\n        {\r\n            \"product_id\": 2,\r\n            \"item_qty\": 1\r\n        }\r\n    ]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{dev}}/sales/create"
+					},
+					"response": []
+				},
+				{
+					"name": "pagination",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{dev}}/sales/paging?data_periode_start=01/07/2024&data_periode_end=30/07/2024&total_data_show=10&page=1",
+							"host": [
+								"{{dev}}"
+							],
+							"path": [
+								"sales",
+								"paging"
+							],
+							"query": [
+								{
+									"key": "data_periode_start",
+									"value": "01/07/2024"
+								},
+								{
+									"key": "data_periode_end",
+									"value": "30/07/2024"
+								},
+								{
+									"key": "total_data_show",
+									"value": "10"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "compare",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{dev}}/sales/compare?date_1=14/06/2024&date_2=16/07/2024",
+							"host": [
+								"{{dev}}"
+							],
+							"path": [
+								"sales",
+								"compare"
+							],
+							"query": [
+								{
+									"key": "keyword",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "date_1",
+									"value": "14/06/2024"
+								},
+								{
+									"key": "date_2",
+									"value": "16/07/2024"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "populer",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{dev}}/sales/populer?data_periode_start=14/06/2024&data_periode_end=16/07/2024&total_data_show=5",
+							"host": [
+								"{{dev}}"
+							],
+							"path": [
+								"sales",
+								"populer"
+							],
+							"query": [
+								{
+									"key": "data_periode_start",
+									"value": "14/06/2024"
+								},
+								{
+									"key": "data_periode_end",
+									"value": "16/07/2024"
+								},
+								{
+									"key": "total_data_show",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "dev",
+			"value": "http://127.0.0.1:8000/api",
+			"type": "string"
+		}
+	]
+}

@@ -3,10 +3,10 @@ from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
 from rest_framework import status
 from rest_framework.decorators import api_view
-from .serializers import CustomerSerializer, ProductsSerializer, SalesSerializer, SalesItemSerializer
+from .serializers import CustomerSerializer, ProductsSerializer, SalesSerializer, SalesItemSerializer, SalesPagingSerializer
 from .models import Customer, Products, Sales, Sale_Items
-from django.db.models import Q
-from datetime import datetime
+from django.db.models import Q, Sum, F
+from datetime import datetime, timedelta
 
 class Controllers:
     
@@ -34,7 +34,7 @@ class Controllers:
             }
             return Response(response_data)
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"error": "Terjadi kesalahan Pada Server Pada Server"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     @staticmethod
     def CreateAddCustomer(request):
@@ -48,7 +48,7 @@ class Controllers:
                 return Response({'messagetype' : 'S', 'message' : 'create Product Successfully', 'data' :serializer.data}, status=status.HTTP_201_CREATED)
             return Response({'messagetype' : 'E', 'message':serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({'messagetype' : 'E', 'message':str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"error": "Terjadi kesalahan Pada Server Pada Server"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     @staticmethod
     def getProductDetail(request):
@@ -82,7 +82,7 @@ class Controllers:
             return Response(response_data)
 
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"error": "Terjadi kesalahan Pada Server Pada Server"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
     @staticmethod
     def insertdatasale(request):
@@ -100,31 +100,27 @@ class Controllers:
             except Customer.DoesNotExist:
                 return Response({'message': 'Invalid sale customer ID'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Validate sale_items
             if not sale_items:
                 return Response({'message': 'Sale items list is required'}, status=status.HTTP_400_BAD_REQUEST)
 
             print("check sale_customer", sale_customer)
-            # Create Sales instance
+        
             sales_data = {
                 'sale_date': sale_date,
                 'sale_customer': sale_customer_id,
-                'sale_items_total': len(sale_items)  # Assuming sale_items_total is the count of items
+                'sale_items_total': len(sale_items) 
             }
             sales_serializer = SalesSerializer(data=sales_data)
             if sales_serializer.is_valid():
                 sales_instance = sales_serializer.save()
 
-                # Process sale items
                 failed_items = []
                 for item in sale_items:
                     product_id = item.get('product_id')
                     item_qty = item.get('item_qty')
 
-                    # Fetch product instance
                     product = Products.objects.get(id=product_id)
 
-                    # Validate quantity
                     if item_qty > product.product_stock:
                         failed_items.append({
                             'product_id': product_id,
@@ -164,7 +160,7 @@ class Controllers:
 
         except Exception as e:
             print("check error", e)
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"error": "Terjadi kesalahan Pada Server Pada Server"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
     @staticmethod
     def pagingControllers(request, format=None):
@@ -188,12 +184,17 @@ class Controllers:
                 except ValueError:
                     return Response({'message': 'Invalid date format'}, status=status.HTTP_400_BAD_REQUEST)
 
-            sales = Sales.objects.filter(filters)
+            sales = Sales.objects.filter(filters).annotate(
+                total_price=Sum(F('sale_items__product_price') * F('sale_items__item_qty'))
+            )
+            
             total_data = sales.count()
             total_page = (total_data + total_data_show - 1) // total_data_show
             sales = sales[(page - 1) * total_data_show : page * total_data_show]
 
-            sales_serializer = SalesSerializer(sales, many=True)
+            sales_serializer = SalesPagingSerializer(sales, many=True)
+            # print("check data sales", sales_serializer.data)
+            
             response_data = {
                 "params": [
                     {
@@ -214,6 +215,116 @@ class Controllers:
                         "rows": sales_serializer.data
                     }
                 ]
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": "Terjadi kesalahan Pada Server"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    @staticmethod
+    def comparedataControllers(request, format=None):
+        try:
+            keyword = request.GET.get('keyword', '')
+            date_1 = request.GET.get('date_1', '')
+            date_2 = request.GET.get('date_2', '')
+            
+            if not date_1 or not date_2:
+                return Response({'message': 'Both date_1 and date_2 are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                date_1_start = datetime.strptime(date_1, '%d/%m/%Y')
+                date_2_start = datetime.strptime(date_2, '%d/%m/%Y')
+                date_1_end = date_1_start + timedelta(days=1)
+                date_2_end = date_2_start + timedelta(days=1)
+            except ValueError:
+                return Response({'message': 'Invalid date format'}, status=status.HTTP_400_BAD_REQUEST)
+
+            date_1_data = Sale_Items.objects.filter(
+                sale_id__sale_date__range=(date_1_start, date_1_end)
+            ).annotate(
+                hour=F('sale_id__sale_date__hour')
+            ).values(
+                'hour'
+            ).annotate(
+                total=Sum(F('product_price') * F('item_qty'))
+            ).order_by('hour')
+            
+            date_2_data = Sale_Items.objects.filter(
+                sale_id__sale_date__range=(date_2_start, date_2_end)
+            ).annotate(
+                hour=F('sale_id__sale_date__hour')
+            ).values(
+                'hour'
+            ).annotate(
+                total=Sum(F('product_price') * F('item_qty'))
+            ).order_by('hour')
+
+            date_1_rows = [{'time': item['hour'], 'total': item['total']} for item in date_1_data]
+            date_2_rows = [{'time': item['hour'], 'total': item['total']} for item in date_2_data]
+
+            response_data = {
+                "params": [
+                    {
+                        "date_1": date_1,
+                        "date_2": date_2
+                    }
+                ],
+                "data": [
+                    {
+                        "date_1_rows" : date_1_rows,
+                        "date_2_rows" : date_2_rows,
+                    }
+                ]
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": "Terjadi kesalahan Pada Server"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    @staticmethod
+    def productPopuler(request, format=None):
+        try:
+            periode_start = request.GET.get('data_periode_start', '')
+            periode_end = request.GET.get('data_periode_end', '')
+            total_data_show = int(request.GET.get('total_data_show', ''))
+            
+            if not periode_start or not periode_end:
+                return Response({'message': 'Both periode_start and periode_end are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                periode_start_date = datetime.strptime(periode_start, '%d/%m/%Y')
+                periode_end_date = datetime.strptime(periode_end, '%d/%m/%Y')
+            except ValueError:
+                return Response({'message': 'Invalid date format'}, status=status.HTTP_400_BAD_REQUEST)
+
+            populer_product = Sale_Items.objects.filter(
+                sale_id__sale_date__range=(periode_start_date, periode_end_date)
+            ).values(
+                'product_id'
+            ).annotate(
+                total_price=Sum(F('product_price') * F('item_qty')),
+                total_items=Sum('item_qty')
+            ).order_by('-total_price')[:total_data_show]
+        
+            product_data = []
+            for item in populer_product:
+                product = Products.objects.get(id=item['product_id'])
+                product_data.append({
+                    "Product_id" : product.id,
+                    "Product_name" :  product.product_name,
+                    "Product_price" : product.product_price,
+                    "Total_items" : item['total_items'],
+                    "Total_price" : item['total_price'],
+                })
+                
+
+            response_data = {
+                "params": [
+                    {
+                        "data_periode_start": periode_start,
+                        "data_periode_end": periode_end,
+                        "total_data_show": total_data_show
+                    }
+                ],
+                "data": product_data
             }
             return Response(response_data, status=status.HTTP_200_OK)
         except Exception as e:
